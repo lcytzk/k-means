@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "TD.h"
 #include "point.h"
 #include "cluster.h"
 
@@ -16,19 +15,34 @@ class KMeans {
         std::vector<Cluster*> cs;
 
     public:
-        KMeans(int _size): size(_size) {
-            //cs.resize(size);
-        }
-        void initClusters() {
-            // TODO
-            cs.push_back(new Cluster(new TD(-1,-1)));
-            cs.push_back(new Cluster(new TD(1000,1000)));
-
-            for(int i = 0; i < 1000; ++i) {
-                ps.push_back(new TD(i, i));
-            }
+        KMeans(int _size, std::vector<Point*> &_ps): size(_size), ps(_ps) {
             p2c.resize(ps.size());
             ds.resize(ps.size(), -1);
+        }
+        void initClusters() {
+            // TODO choose center from all members.
+            float d = -1;
+            int index = 0;
+
+            cs.push_back(new Cluster(ps[0]));
+
+            std::vector<float> ds_tmp;
+            float dt;
+            ds_tmp.resize(ps.size(), 0);
+
+            for(int j = 1; j < size; ++j) {
+                dt = 0;
+                for(int i = 0; i < ps.size(); ++i) {
+                    for(auto c : cs) {
+                        dt += *c - *ps[i];
+                    }
+                    if(d == -1 || dt < d) {
+                        d = dt;
+                        index = i;
+                    }
+                }
+                cs.push_back(new Cluster(ps[index]));
+            }
         }
         void start() {
             initClusters();
