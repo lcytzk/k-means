@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include <random>
+#include <thread>
 
 #include "point.h"
 #include "cluster.h"
@@ -32,7 +33,6 @@ class KMeans {
         }
         void initClusters() {
             // TODO choose center from all members.
-
             int r = static_cast<int>(randomRange(ps.size()));
             cs.push_back(new Cluster(ps[r]));
 
@@ -56,35 +56,53 @@ class KMeans {
             }
             for(auto c : cs) c->center->output();
         } 
+        void doRound(int s, int e) {
+            for(int i = s; i < e; ++i) {
+                //if(randomRange(1.0) < 0.2) continue;
+                for(auto c : cs) {
+                    float d = *c - *ps[i];
+                    if((ds[i] == -1) || (d < ds[i])) {
+                        p2c[i] = c;
+                        ds[i] = d;
+                    }
+                }
+                //p2c[i]->update(*ps[i]);
+            }
+        }
+        void parallel() {
+        }
         void start() {
             initClusters();
-            bool stop = false;
-            while(!stop) {
+            std::vector<std::thread*> works;
+            int num = 4;
+            int r = 10;
+            while(--r) {
                 for(auto c : cs) c->beforeUpdate();
-                // Find the nearest center for every point.
+                int k = ps.size() / num + 1;
+                for(int i = 0; i < num; ++i) {
+                    int s = k * i;
+                    s = s < ps.size() ? s : ps.size() - 1;
+                    int e = s + k;
+                    e = e <= ps.size() ? e : ps.size();
+                    works.push_back(new std::thread(&KMeans::doRound, this, s, e));
+                }
+                for(auto t : works) t->join();
+                works.clear();
+                // Calculate the new center.
                 for(int i = 0; i < ps.size(); ++i) {
-                    for(auto c : cs) {
-                        float d = *c - *ps[i];
-                        if((ds[i] == -1) || (d < ds[i])) {
-                            p2c[i] = c;
-                            ds[i] = d;
-                        }
-                    }
                     p2c[i]->update(*ps[i]);
                 }
                 bool flag = true;
-                // Calculate the new center.
                 for(auto c : cs) {
-                    float k = c->finishUpdate();
-                    //std::cout << k << std::endl;
-                    flag &= (k < 0.01);
+                    flag &= (c->finishUpdate() < 1);
                 }
+                
                 // Calculate the new distance.
                 for(int i = 0; i < ps.size(); ++i) {
                     ds[i] = *p2c[i] - *ps[i];
                 }
-                stop = flag;
-                outputCenters();
+                //stop = flag;
+                std::cout << "---one round---" << std::endl;
             }
         }
         void outputCenters() {
@@ -94,12 +112,12 @@ class KMeans {
         void output() {
             std::cout << "-------------centers" << std::endl;
             for(auto c : cs) c->center->output();
-            std::cout << "-------------detail" << std::endl;
-            for(int i = 0; i < ps.size(); ++i) {
-                ps[i]->output();
-                p2c[i]->center->output();
-                std::cout << ds[i] << std::endl << std::endl;
-            }
+            //std::cout << "-------------detail" << std::endl;
+            //for(int i = 0; i < ps.size(); ++i) {
+            //    ps[i]->output();
+            //    p2c[i]->center->output();
+            //    std::cout << ds[i] << std::endl << std::endl;
+            //}
         }
 
 };

@@ -8,13 +8,13 @@
 
 using namespace std;
 
-void geneData(vector<Point*> &ps) {
-    for(int i = 0; i < 20; ++i) ps.push_back(new TD(i, i));
+void geneData(vector<Point*> &ps, int size) {
+    for(int i = 0; i < size; ++i) ps.push_back(new TD(i));
 }
 
 int main(int argc, char* argv[]) {
     vector<Point*> ps;
-    geneData(ps);
+    geneData(ps, atoi(argv[2]));
     KMeans ks(atoi(argv[1]), ps);
     ks.start();
     ks.output();

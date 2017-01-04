@@ -3,36 +3,39 @@
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 #include "point.h"
 
 class TD : public Point {
     private:
-        float x, y;
+        std::vector<float> dimensions;
 
     public:
-        TD(float _x, float _y): x(_x), y(_y) {}
+        TD(float k) {
+            for(int i = 0; i < 64; ++i) dimensions.push_back(k);
+        }
         float operator-(const Point &p) const {
             const TD &t = static_cast<const TD&>(p);
-            return sqrt(pow(x - t.x, 2) + pow(y - t.y, 2));
+            float f = 0;
+            for(int i = 0; i < dimensions.size(); ++i) f += pow(dimensions[i] - t.dimensions[i], 2);
+            return sqrt(f);
         }
         Point* duplicate() {
-            return new TD(x, y);
+            return new TD(dimensions[0]);
         }
         Point* newOne() {
-            return new TD(0, 0);
+            return new TD(0);
         }
         void add(Point &p) {
             const TD &t = static_cast<const TD&>(p);
-            x += t.x;
-            y += t.y;
+            for(int i = 0; i < dimensions.size(); ++i) dimensions[i] += t.dimensions[i];
         }
         void divide(int k) {
-            x /= k;
-            y /= k;
+            for(auto & f : dimensions) f /= k;
         }
         void output() {
-            std::cout << x << ' ' << y << std::endl;
+            std::cout << dimensions[0] << std::endl;
         }
 
 };
