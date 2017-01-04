@@ -3,8 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <ctime>
+#include <random>
 
 #include "point.h"
 #include "cluster.h"
@@ -24,7 +23,8 @@ class KMeans {
         }
         void initClusters() {
             // TODO choose center from all members.
-            srand(time(0));
+            std::default_random_engine generator;
+
             cs.push_back(new Cluster(ps[0]));
 
             std::vector<float> ds_tmp;
@@ -36,7 +36,9 @@ class KMeans {
                     for(auto c : cs) ds_tmp[i] += *c - *ps[i];
                     all += ds_tmp[i];
                 }
-                float random = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/all));
+                std::uniform_real_distribution<float> distribution(0.0, all);
+                distribution.reset();
+                float random = distribution(generator);
                 std::cout << random << '\t' << all << std::endl;
                 for(int i = 0; i < ds_tmp.size(); ++i) {
                     random -= ds_tmp[i];
