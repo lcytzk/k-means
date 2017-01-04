@@ -1,7 +1,10 @@
 #ifndef __KMEANS_H__
 #define __KMEANS_H__
 
+#include <iostream>
 #include <vector>
+#include <cstdlib>
+#include <ctime>
 
 #include "point.h"
 #include "cluster.h"
@@ -21,29 +24,30 @@ class KMeans {
         }
         void initClusters() {
             // TODO choose center from all members.
-            float d = -1;
-            int index = 0;
-
+            srand(time(0));
             cs.push_back(new Cluster(ps[0]));
 
             std::vector<float> ds_tmp;
-            float dt;
             ds_tmp.resize(ps.size(), 0);
 
             for(int j = 1; j < size; ++j) {
-                dt = 0;
+                float all = 0;
                 for(int i = 0; i < ps.size(); ++i) {
-                    for(auto c : cs) {
-                        dt += *c - *ps[i];
-                    }
-                    if(d == -1 || dt < d) {
-                        d = dt;
-                        index = i;
+                    for(auto c : cs) ds_tmp[i] += *c - *ps[i];
+                    all += ds_tmp[i];
+                }
+                float random = static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/all));
+                std::cout << random << '\t' << all << std::endl;
+                for(int i = 0; i < ds_tmp.size(); ++i) {
+                    random -= ds_tmp[i];
+                    if(random < 0) {
+                        cs.push_back(new Cluster(ps[i]));
+                        break;
                     }
                 }
-                cs.push_back(new Cluster(ps[index]));
             }
-        }
+            for(auto c : cs) c->center->output();
+        } 
         void start() {
             initClusters();
             bool stop = false;
@@ -73,7 +77,14 @@ class KMeans {
             }
         }
         void output() {
+            std::cout << "-------------centers" << std::endl;
             for(auto c : cs) c->center->output();
+            //std::cout << "-------------detail" << std::endl;
+            //for(int i = 0; i < ps.size(); ++i) {
+            //    ps[i]->output();
+            //    p2c[i]->center->output();
+            //    std::cout << ds[i] << std::endl << std::endl;
+            //}
         }
 
 };

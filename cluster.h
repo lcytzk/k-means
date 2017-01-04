@@ -11,7 +11,9 @@ class Cluster {
         int size = 0;
 
     public:
-        Cluster(Point *p): center(p) {}
+        Cluster(Point *p) {
+            center = p->duplicate();
+        }
         void beforeUpdate() {
             newCenter = center->newOne();
             size = 0;
