@@ -23,8 +23,12 @@ class Cluster {
             ++size;
         }
         float finishUpdate() {
+            if(!size) {
+                delete newCenter;
+                return 0;
+            }
             newCenter->divide(size);
-            float d = newCenter - center;
+            float d = *newCenter - *center;
             delete center;
             center = newCenter;
             return d;

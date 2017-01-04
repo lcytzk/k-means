@@ -9,7 +9,7 @@
 using namespace std;
 
 void geneData(vector<Point*> &ps) {
-    for(int i = 0; i < 100; ++i) ps.push_back(new TD(i, i));
+    for(int i = 0; i < 20; ++i) ps.push_back(new TD(i, i));
 }
 
 int main(int argc, char* argv[]) {

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include <random>
 
 #include "point.h"
@@ -15,17 +16,25 @@ class KMeans {
         std::vector<float> ds;
         std::vector<Cluster*> p2c;
         std::vector<Cluster*> cs;
+        std::default_random_engine generator;
+
+        float randomRange(float range) {
+            std::uniform_real_distribution<float> distribution(0.0, range);
+            return distribution(generator);
+        }
 
     public:
         KMeans(int _size, std::vector<Point*> &_ps): size(_size), ps(_ps) {
             p2c.resize(ps.size());
             ds.resize(ps.size(), -1);
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            generator = std::default_random_engine(seed);
         }
         void initClusters() {
             // TODO choose center from all members.
-            std::default_random_engine generator;
 
-            cs.push_back(new Cluster(ps[0]));
+            int r = static_cast<int>(randomRange(ps.size()));
+            cs.push_back(new Cluster(ps[r]));
 
             std::vector<float> ds_tmp;
             ds_tmp.resize(ps.size(), 0);
@@ -36,10 +45,7 @@ class KMeans {
                     for(auto c : cs) ds_tmp[i] += *c - *ps[i];
                     all += ds_tmp[i];
                 }
-                std::uniform_real_distribution<float> distribution(0.0, all);
-                distribution.reset();
-                float random = distribution(generator);
-                std::cout << random << '\t' << all << std::endl;
+                float random = randomRange(all);
                 for(int i = 0; i < ds_tmp.size(); ++i) {
                     random -= ds_tmp[i];
                     if(random < 0) {
@@ -69,24 +75,31 @@ class KMeans {
                 bool flag = true;
                 // Calculate the new center.
                 for(auto c : cs) {
-                    flag &= (c->finishUpdate() < 0.1);
+                    float k = c->finishUpdate();
+                    //std::cout << k << std::endl;
+                    flag &= (k < 0.01);
                 }
                 // Calculate the new distance.
                 for(int i = 0; i < ps.size(); ++i) {
                     ds[i] = *p2c[i] - *ps[i];
                 }
-                stop = !flag;
+                stop = flag;
+                outputCenters();
             }
+        }
+        void outputCenters() {
+            std::cout << "-------------centers" << std::endl;
+            for(auto c : cs) c->center->output();
         }
         void output() {
             std::cout << "-------------centers" << std::endl;
             for(auto c : cs) c->center->output();
-            //std::cout << "-------------detail" << std::endl;
-            //for(int i = 0; i < ps.size(); ++i) {
-            //    ps[i]->output();
-            //    p2c[i]->center->output();
-            //    std::cout << ds[i] << std::endl << std::endl;
-            //}
+            std::cout << "-------------detail" << std::endl;
+            for(int i = 0; i < ps.size(); ++i) {
+                ps[i]->output();
+                p2c[i]->center->output();
+                std::cout << ds[i] << std::endl << std::endl;
+            }
         }
 
 };
