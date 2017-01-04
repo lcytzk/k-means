@@ -9,6 +9,7 @@
 
 #include "point.h"
 #include "cluster.h"
+#include "thread_pool.h"
 
 class KMeans {
     private:
@@ -18,6 +19,8 @@ class KMeans {
         std::vector<Cluster*> p2c;
         std::vector<Cluster*> cs;
         std::default_random_engine generator;
+        ThreadPool pool;
+        int workNum = 8;
 
         float randomRange(float range) {
             std::uniform_real_distribution<float> distribution(0.0, range);
@@ -25,7 +28,7 @@ class KMeans {
         }
 
     public:
-        KMeans(int _size, std::vector<Point*> &_ps): size(_size), ps(_ps) {
+        KMeans(int _size, std::vector<Point*> &_ps, int threadNum): size(_size), ps(_ps), workNum(threadNum), pool(threadNum) {
             p2c.resize(ps.size());
             ds.resize(ps.size(), -1);
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -33,26 +36,50 @@ class KMeans {
         }
         void initClusters() {
             // TODO choose center from all members.
-            int r = static_cast<int>(randomRange(ps.size()));
-            cs.push_back(new Cluster(ps[r]));
+            //int r = static_cast<int>(randomRange(ps.size()));
+            //cs.push_back(new Cluster(ps[r]));
 
-            std::vector<float> ds_tmp;
-            ds_tmp.resize(ps.size(), 0);
+            //std::vector<float> ds_tmp;
+            //ds_tmp.resize(ps.size(), 0);
 
-            for(int j = 1; j < size; ++j) {
-                float all = 0;
-                for(int i = 0; i < ps.size(); ++i) {
-                    for(auto c : cs) ds_tmp[i] += *c - *ps[i];
-                    all += ds_tmp[i];
-                }
-                float random = randomRange(all);
-                for(int i = 0; i < ds_tmp.size(); ++i) {
-                    random -= ds_tmp[i];
-                    if(random < 0) {
-                        cs.push_back(new Cluster(ps[i]));
-                        break;
-                    }
-                }
+            //for(int j = 1; j < size; ++j) {
+            //    std::vector<std::future<void>> res;
+            //    int batch = ps.size() / workNum + 1;
+            //    for(int i = 0; i < workNum; ++i) {
+            //        int s = i * batch;
+            //        s = s < ps.size() ? s : ps.size();
+            //        int e = s + batch;
+            //        e = e < ps.size() ? e : ps.size();
+            //        res.emplace_back(
+            //            pool.enqueue([this, s, e, &ds_tmp] {
+            //                for(int j = s; j < e; ++j) {
+            //                    for(auto c : cs) ds_tmp[j] += *c - *ps[j];
+            //                }
+            //            })
+            //        );
+            //    }
+            //     for(auto && result : res) {
+            //         result.wait();
+            //     }
+
+            //    //for(int i = 0; i < ps.size(); ++i) {
+            //    //    for(auto c : cs) ds_tmp[i] += *c - *ps[i];
+            //    //}
+            //    float all = 0;
+            //    for(auto f : ds_tmp) all += f;
+            //    float random = randomRange(all);
+            //    for(int i = 0; i < ds_tmp.size(); ++i) {
+            //        random -= ds_tmp[i];
+            //        if(random < 0) {
+            //            cs.push_back(new Cluster(ps[i]));
+            //            break;
+            //        }
+            //    }
+            //    std::cout << j << std::endl;
+            //}
+            for(int j = 0; j < size; ++j) {
+                int r = static_cast<int>(randomRange(ps.size() - j));
+                cs.push_back(new Cluster(ps[j + r]));
             }
             for(auto c : cs) c->center->output();
         } 
@@ -74,7 +101,7 @@ class KMeans {
         void start() {
             initClusters();
             std::vector<std::thread*> works;
-            int num = 4;
+            int num = workNum;
             int r = 10;
             while(--r) {
                 for(auto c : cs) c->beforeUpdate();
