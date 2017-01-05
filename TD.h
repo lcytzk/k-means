@@ -4,16 +4,29 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <string>
 
+#include "split_string.h"
 #include "point.h"
 
 class TD : public Point {
     private:
+        std::string label;
         std::vector<float> dimensions;
 
     public:
-        TD(float k) {
-            for(int i = 0; i < 64; ++i) dimensions.push_back(k);
+        TD(float k, int s) {
+            for(int i = 0; i < s; ++i) dimensions.push_back(k);
+        }
+        TD(TD &t) {
+            label = t.label;
+            dimensions = t.dimensions;
+        }
+        TD(std::vector<std::string> &ss) {
+            label = ss[0];
+            for(int i = 1; i < ss.size(); ++i) {
+                dimensions.push_back(atof(ss[i].c_str()));
+            }
         }
         float operator-(const Point &p) const {
             const TD &t = static_cast<const TD&>(p);
@@ -22,10 +35,10 @@ class TD : public Point {
             return sqrt(f);
         }
         Point* duplicate() {
-            return new TD(dimensions[0]);
+            return new TD(*this);
         }
         Point* newOne() {
-            return new TD(0);
+            return new TD(0, dimensions.size());
         }
         void add(Point &p) {
             const TD &t = static_cast<const TD&>(p);

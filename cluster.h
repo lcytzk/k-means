@@ -9,9 +9,10 @@ class Cluster {
         Point *center;
         Point *newCenter;
         int size = 0;
+        int id;
 
     public:
-        Cluster(Point *p) {
+        Cluster(Point *p, int _id): id(_id) {
             center = p->duplicate();
         }
         void beforeUpdate() {
