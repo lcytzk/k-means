@@ -30,6 +30,6 @@ int main(int argc, char* argv[]) {
     geneData(ps, string(argv[3]));
     KMeans ks(atoi(argv[1]), ps, atoi(argv[2]));
     ks.start();
-    ks.output("result");
+    ks.output(argv[4]);
     return 0;
 }

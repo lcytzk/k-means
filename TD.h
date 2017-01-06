@@ -11,7 +11,6 @@
 
 class TD : public Point {
     private:
-        std::string label;
         std::vector<float> dimensions;
 
     public:

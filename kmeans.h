@@ -141,7 +141,9 @@ class KMeans {
         }
         void output(std::string filename) {
             std::ofstream fo(filename);
-            for(auto c : p2c) fo << c->id << std::endl;
+            for(int i = 0; i < ps.size(); ++i) {
+                fo << ps[i]->label << ' ' << p2c[i]->id << std::endl;
+            }
             fo.close();
             //for(auto c : cs) c->center->output();
             //std::cout << "-------------detail" << std::endl;
