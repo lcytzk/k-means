@@ -97,8 +97,6 @@ class KMeans {
                 }
             }
         }
-        void parallel() {
-        }
         void start() {
             initClusters();
             std::vector<std::thread*> works;
@@ -117,7 +115,10 @@ class KMeans {
                     e = e <= ps.size() ? e : ps.size();
                     works.push_back(new std::thread(&KMeans::doRound, this, s, e));
                 }
-                for(auto t : works) t->join();
+                for(auto t : works) {
+                    t->join();
+                    delete t;
+                }
                 works.clear();
                 // Calculate the new center.
                 for(int i = 0; i < ps.size(); ++i) {
