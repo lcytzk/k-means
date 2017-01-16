@@ -28,7 +28,11 @@ void geneData(vector<Point*> &ps, string &&filename) {
 int main(int argc, char* argv[]) {
     vector<Point*> ps;
     geneData(ps, string(argv[3]));
-    KMeans ks(atoi(argv[1]), ps, atoi(argv[2]));
+    int r = 300;
+    if (argc > 5) {
+        r = atoi(argv[5]);
+    }
+    KMeans ks(atoi(argv[1]), ps, atoi(argv[2]), r);
     ks.start();
     ks.output(argv[4]);
     return 0;

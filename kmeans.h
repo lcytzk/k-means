@@ -8,6 +8,7 @@
 #include <thread>
 #include <cfloat>
 #include <fstream>
+#include <ctime>
 
 #include "point.h"
 #include "cluster.h"
@@ -23,6 +24,7 @@ class KMeans {
         std::default_random_engine generator;
         ThreadPool pool;
         int workNum = 8;
+        int maxRound = 300;
 
         float randomRange(float range) {
             std::uniform_real_distribution<float> distribution(0.0, range);
@@ -30,7 +32,7 @@ class KMeans {
         }
 
     public:
-        KMeans(int _size, std::vector<Point*> &_ps, int threadNum): size(_size), ps(_ps), workNum(threadNum), pool(threadNum) {
+        KMeans(int _size, std::vector<Point*> &_ps, int threadNum, int r): size(_size), ps(_ps), workNum(threadNum), pool(threadNum), maxRound(r) {
             p2c.resize(ps.size());
             ds.resize(ps.size(), -1);
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -104,7 +106,8 @@ class KMeans {
             int r = 10;
             bool stop = false;
             int round = 0;
-            while(!stop && round < 300) {
+            while(!stop && round < maxRound) {
+                int start = clock();
                 for(auto c : cs) c->beforeUpdate();
                 int k = ps.size() / num + 1;
                 for(int i = 0; i < num; ++i) {
@@ -131,9 +134,9 @@ class KMeans {
                 }
                 stop = flag;
                 ++round;
-                //std::cout << "---one round---" << std::endl;
+                std::cout << "Round: " << round << "  time used: " << (clock() - start)/double(CLOCKS_PER_SEC) << std::endl;
             }
-            std::cout << round << std::endl;
+            std::cout << "Stop at round: " << round << std::endl;
         }
         void outputCenters() {
             std::cout << "-------------centers" << std::endl;
@@ -142,7 +145,7 @@ class KMeans {
         void output(std::string filename) {
             std::ofstream fo(filename);
             for(int i = 0; i < ps.size(); ++i) {
-                fo << ps[i]->label << ' ' << p2c[i]->id << std::endl;
+                fo << p2c[i]->id << ' ' << ps[i]->label << std::endl;
             }
             fo.close();
             //for(auto c : cs) c->center->output();
