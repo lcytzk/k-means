@@ -105,7 +105,7 @@ class KMeans {
             bool stop = false;
             int round = 0;
             while(!stop && round < maxRound) {
-                int start = clock();
+                auto start = std::chrono::high_resolution_clock::now();
                 for(auto c : cs) c->beforeUpdate();
                 int k = ps.size() / num + 1;
                 for(int i = 0; i < num; ++i) {
@@ -135,7 +135,9 @@ class KMeans {
                 }
                 stop = flag;
                 ++round;
-                std::cout << "Round: " << round << "  time used: " << (clock() - start)/double(CLOCKS_PER_SEC) << std::endl;
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> diff = end - start;
+                std::cout << "Round: " << round << "  time used: " << diff.count() << std::endl;
             }
             std::cout << "Stop at round: " << round << std::endl;
         }
